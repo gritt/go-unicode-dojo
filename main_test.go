@@ -71,3 +71,16 @@ func Example_Display() {
 	// U+00AE	®	REGISTERED SIGN
 	// U+023D	Ƚ	LATIN CAPITAL LETTER L WITH BAR
 }
+
+func TestReadUnicodeData(t *testing.T) {
+	want := []CharName{
+		{'0', "DIGIT ZERO"},
+		{'1', "DIGIT ONE"},
+		{'2', "DIGIT TWO"},
+	}
+
+	got, err := ReadUnicodeData("UnicodeDataFixture.txt")
+
+	assert.NoError(t, err)
+	assert.Equal(t, want, got)
+}
