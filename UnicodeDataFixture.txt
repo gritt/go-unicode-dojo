@@ -1,0 +1,3 @@
+0030;DIGIT ZERO;Nd;0;EN;;0;0;0;N;;;;;
+0031;DIGIT ONE;Nd;0;EN;;1;1;1;N;;;;;
+0032;DIGIT TWO;Nd;0;EN;;2;2;2;N;;;;;
