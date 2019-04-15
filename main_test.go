@@ -86,10 +86,10 @@ func TestReadUnicodeData(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func TestDownloadUnicodeDataFile(t *testing.T) {
+func TestDownloadUnicodeFile(t *testing.T) {
 	os.Remove("UnicodeData.txt")
 
-	filename, err := DownloadUnicodeDataToFile()
+	filename, err := DownloadUnicodeFile()
 
 	got, err := ReadUnicodeData(filename)
 

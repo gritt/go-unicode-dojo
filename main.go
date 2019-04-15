@@ -72,7 +72,7 @@ func ReadUnicodeData(filename string) ([]CharName, error) {
 	return charNames, nil
 }
 
-func DownloadUnicodeDataToFile() (string, error) {
+func DownloadUnicodeFile() (string, error) {
 	resp, err := http.Get(UnicodeDataURI)
 	if err != nil {
 		return "", err
