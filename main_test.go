@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
@@ -16,7 +17,7 @@ func TestFilter(t *testing.T) {
 	assert.Equal(t, wanted, got)
 }
 
-func TestFilter_cases(t *testing.T) {
+func TestFilter_query_cases(t *testing.T) {
 	given := []CharName{
 		{0x3c, "LESS-THAN SIGN"},
 		{0xAE, "REGISTERED SIGN"},
@@ -83,4 +84,17 @@ func TestReadUnicodeData(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, want, got)
+}
+
+func TestDownloadUnicodeDataFile(t *testing.T) {
+	os.Remove("UnicodeData.txt")
+
+	filename, err := DownloadUnicodeDataToFile()
+
+	got, err := ReadUnicodeData(filename)
+
+	assert.FileExists(t, filename)
+	assert.NoError(t, err)
+	assert.Equal(t, CharName{0x20, "SPACE"}, got[32])
+	assert.True(t, len(got) > 31000)
 }

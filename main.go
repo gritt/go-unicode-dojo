@@ -4,10 +4,15 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/standupdev/strset"
+	"io"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 )
+
+const UnicodeDataURI string = "http://www.unicode.org/Public/UNIDATA/UnicodeData.txt"
+const UnicodeDataFilename string = "UnicodeData.txt"
 
 type CharName struct {
 	char rune
@@ -65,4 +70,22 @@ func ReadUnicodeData(filename string) ([]CharName, error) {
 	}
 
 	return charNames, nil
+}
+
+func DownloadUnicodeDataToFile() (string, error) {
+	resp, err := http.Get(UnicodeDataURI)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	file, err := os.OpenFile(UnicodeDataFilename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, resp.Body)
+
+	return UnicodeDataFilename, nil
 }
