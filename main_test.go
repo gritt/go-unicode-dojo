@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 )
@@ -97,4 +99,52 @@ func TestDownloadUnicodeFile(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, CharName{0x20, "SPACE"}, got[32])
 	assert.True(t, len(got) > 31000)
+}
+
+func TestSearchUnicodeDataHandler_query_cases(t *testing.T) {
+
+	testCases := []struct {
+		description  string
+		query        []string
+		wantResponse string
+		wantStatus   int
+	}{
+		{"Single result response", []string{"PLUS-MINUS SIGN"}, `{
+		"status": "success",
+		"results": {
+			"PLUS-MINUS SIGN": "0xB1"
+		}
+	}`, 200},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			given := buildGETRequestWithQuery(t, tc.query)
+
+			responseRecorder := httptest.NewRecorder()
+			handler := http.HandlerFunc(SearchUnicodeDataHandler)
+			handler.ServeHTTP(responseRecorder, given)
+
+			assert.Equal(t, tc.wantResponse, responseRecorder.Body.String(), tc.description)
+			assert.Equal(t, tc.wantStatus, responseRecorder.Code)
+		})
+	}
+}
+
+func buildGETRequestWithQuery(t *testing.T, query []string) *http.Request {
+
+	request, err := http.NewRequest("GET", "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	q := request.URL.Query()
+	for _, param := range query {
+		q.Add("query", param)
+	}
+
+	request.URL.RawQuery = q.Encode()
+
+	return request
 }
