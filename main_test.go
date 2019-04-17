@@ -21,7 +21,7 @@ func TestFilter(t *testing.T) {
 
 func TestFilter_query_cases(t *testing.T) {
 	given := []CharName{
-		{0x3c, "LESS-THAN SIGN"},
+		{0x3C, "LESS-THAN SIGN"},
 		{0xAE, "REGISTERED SIGN"},
 		{0x23D, "LATIN CAPITAL LETTER L WITH BAR"},
 	}
@@ -34,10 +34,10 @@ func TestFilter_query_cases(t *testing.T) {
 		{"Case Insensitive", []string{"registered"}, []CharName{{0xAE, "REGISTERED SIGN"}}},
 		{"Whole Word Only", []string{"regis"}, []CharName{}},
 		{"Not found", []string{"something that not exists"}, []CharName{}},
-		{"Hyphenated Name", []string{"LESS"}, []CharName{{0x3c, "LESS-THAN SIGN"}}},
-		{"Hyphenated Query", []string{"LESS-THAN"}, []CharName{{0x3c, "LESS-THAN SIGN"}}},
-		{"Multiple Results", []string{"SIGN"}, []CharName{{0x3c, "LESS-THAN SIGN"}, {0xAE, "REGISTERED SIGN"}}},
-		{"Multiple Queries Order Insensitive", []string{"SIGN", "LESS"}, []CharName{{0x3c, "LESS-THAN SIGN"}}},
+		{"Hyphenated Name", []string{"LESS"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
+		{"Hyphenated Query", []string{"LESS-THAN"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
+		{"Multiple Results", []string{"SIGN"}, []CharName{{0x3C, "LESS-THAN SIGN"}, {0xAE, "REGISTERED SIGN"}}},
+		{"Multiple Queries Order Insensitive", []string{"SIGN", "LESS"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
 		{"Empty Query", []string{}, []CharName{}},
 		{"Duplicate Query Name", []string{"REGISTERED", "REGISTERED"}, []CharName{{0xAE, "REGISTERED SIGN"}}},
 	}
@@ -64,7 +64,7 @@ func TestParseUnicodeLine(t *testing.T) {
 
 func Example_Display() {
 	given := []CharName{
-		{0x3c, "LESS-THAN SIGN"},
+		{0x3C, "LESS-THAN SIGN"},
 		{0xAE, "REGISTERED SIGN"},
 		{0x23D, "LATIN CAPITAL LETTER L WITH BAR"},
 	}
@@ -102,19 +102,14 @@ func TestDownloadUnicodeFile(t *testing.T) {
 }
 
 func TestSearchUnicodeDataHandler_query_cases(t *testing.T) {
-
 	testCases := []struct {
 		description  string
 		query        []string
 		wantResponse string
 		wantStatus   int
 	}{
-		{"Single result response", []string{"PLUS-MINUS SIGN"}, `{
-		"status": "success",
-		"results": {
-			"PLUS-MINUS SIGN": "0xB1"
-		}
-	}`, 200},
+		{"Empty query returns error", nil, `{"status":"error","message":"Empty query given","charNames":null}`, 400},
+		{"Query returns single result", []string{"SMALL LETTER TURNED DELTA"}, `{"status":"success","message":"Found these results for your search","charNames":[{"char":397,"name":"LATIN SMALL LETTER TURNED DELTA"}]}`, 200},
 	}
 
 	for _, tc := range testCases {
@@ -137,6 +132,10 @@ func buildGETRequestWithQuery(t *testing.T, query []string) *http.Request {
 	request, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if query == nil {
+		return request
 	}
 
 	q := request.URL.Query()
