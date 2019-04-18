@@ -105,10 +105,7 @@ func SearchUnicodeDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	terms := []string{}
-	for key := range query {
-		terms = append(terms, query.Get(key))
-	}
+	searchTerms := query["query"]
 
 	unicodeData, err := ReadUnicodeData(UnicodeDataFilename)
 	if err != nil {
@@ -120,11 +117,16 @@ func SearchUnicodeDataHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	charNames := Filter(unicodeData, terms)
+	charNames := Filter(unicodeData, searchTerms)
 
 	resp := CharNameResponse{}
 	resp.Status = "success"
+
 	resp.Message = "Found these results for your search"
+	if len(charNames) == 0 {
+		resp.Message = "Could not find any results for the given query"
+	}
+
 	resp.CharNames = charNames
 	jsonResp, err := json.Marshal(resp)
 	if err != nil {

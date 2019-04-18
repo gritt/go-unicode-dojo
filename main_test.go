@@ -31,15 +31,15 @@ func TestFilter_query_cases(t *testing.T) {
 		query       []string
 		want        []CharName
 	}{
-		{"Case Insensitive", []string{"registered"}, []CharName{{0xAE, "REGISTERED SIGN"}}},
-		{"Whole Word Only", []string{"regis"}, []CharName{}},
-		{"Not found", []string{"something that not exists"}, []CharName{}},
-		{"Hyphenated Name", []string{"LESS"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
-		{"Hyphenated Query", []string{"LESS-THAN"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
-		{"Multiple Results", []string{"SIGN"}, []CharName{{0x3C, "LESS-THAN SIGN"}, {0xAE, "REGISTERED SIGN"}}},
-		{"Multiple Queries Order Insensitive", []string{"SIGN", "LESS"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
-		{"Empty Query", []string{}, []CharName{}},
-		{"Duplicate Query Name", []string{"REGISTERED", "REGISTERED"}, []CharName{{0xAE, "REGISTERED SIGN"}}},
+		{"Should match case insensitive", []string{"registered"}, []CharName{{0xAE, "REGISTERED SIGN"}}},
+		{"Should match whole words only", []string{"regis"}, []CharName{}},
+		{"Should not found something that not exists", []string{"something that not exists"}, []CharName{}},
+		{"Should match with hyphenated words", []string{"LESS"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
+		{"Should match with hyphenated query", []string{"LESS-THAN"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
+		{"Should return multiple results", []string{"SIGN"}, []CharName{{0x3C, "LESS-THAN SIGN"}, {0xAE, "REGISTERED SIGN"}}},
+		{"Should be multiple queries order insensitive", []string{"SIGN", "LESS"}, []CharName{{0x3C, "LESS-THAN SIGN"}}},
+		{"Should return empty for empty query", []string{}, []CharName{}},
+		{"Should match one when query is duplicated", []string{"REGISTERED", "REGISTERED"}, []CharName{{0xAE, "REGISTERED SIGN"}}},
 	}
 
 	for _, tc := range testCases {
@@ -108,8 +108,36 @@ func TestSearchUnicodeDataHandler_query_cases(t *testing.T) {
 		wantResponse string
 		wantStatus   int
 	}{
-		{"Empty query returns error", nil, `{"status":"error","message":"Empty query given","charNames":null}`, 400},
-		{"Query returns single result", []string{"SMALL LETTER TURNED DELTA"}, `{"status":"success","message":"Found these results for your search","charNames":[{"char":397,"name":"LATIN SMALL LETTER TURNED DELTA"}]}`, 200},
+		{
+			"Should return error when null query is given",
+			nil,
+			`{"status":"error","message":"Empty query given","charNames":null}`,
+			400,
+		},
+		{
+			"Should return single result when given query matches one char name",
+			[]string{"SMALL LETTER TURNED DELTA"},
+			`{"status":"success","message":"Found these results for your search","charNames":[{"char":397,"name":"LATIN SMALL LETTER TURNED DELTA"}]}`,
+			200,
+		},
+		{
+			"Should return multiple results when given query matches multiple char names",
+			[]string{"DESKTOP"},
+			`{"status":"success","message":"Found these results for your search","charNames":[{"char":128421,"name":"DESKTOP COMPUTER"},{"char":128468,"name":"DESKTOP WINDOW"}]}`,
+			200,
+		},
+		{
+			"Should return single result when given multiple matching queries and queries should refine the search",
+			[]string{"DESKTOP", "COMPUTER"},
+			`{"status":"success","message":"Found these results for your search","charNames":[{"char":128421,"name":"DESKTOP COMPUTER"}]}`,
+			200,
+		},
+		{
+			"Should return empty result when given query dont match any char",
+			[]string{"OCTOPUS CAT"},
+			`{"status":"success","message":"Could not find any results for the given query","charNames":[]}`,
+			200,
+		},
 	}
 
 	for _, tc := range testCases {
