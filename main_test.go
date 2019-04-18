@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 )
 
@@ -89,8 +88,6 @@ func TestReadUnicodeData(t *testing.T) {
 }
 
 func TestDownloadUnicodeFile(t *testing.T) {
-	os.Remove("UnicodeData.txt")
-
 	filename, err := DownloadUnicodeFile()
 
 	got, err := ReadUnicodeData(filename)
@@ -143,7 +140,7 @@ func TestSearchUnicodeDataHandler_query_cases(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			given := buildGETRequestWithQuery(t, tc.query)
+			given := buildGETRequestWithQuery(t, tc.query, "query")
 
 			responseRecorder := httptest.NewRecorder()
 			handler := http.HandlerFunc(SearchUnicodeDataHandler)
@@ -155,20 +152,32 @@ func TestSearchUnicodeDataHandler_query_cases(t *testing.T) {
 	}
 }
 
-func buildGETRequestWithQuery(t *testing.T, query []string) *http.Request {
+func TestSearchUnicodeDataHandler_invalid_query(t *testing.T) {
+	someQuery := []string{"CAT"}
 
+	given := buildGETRequestWithQuery(t, someQuery, "cueri")
+
+	responseRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(SearchUnicodeDataHandler)
+	handler.ServeHTTP(responseRecorder, given)
+
+	assert.Equal(t, `{"status":"error","message":"Invalid query given","charNames":null}`, responseRecorder.Body.String(), "Should return error when invalid query URI param is given")
+	assert.Equal(t, 400, responseRecorder.Code)
+}
+
+func buildGETRequestWithQuery(t *testing.T, queries []string, queryName string) *http.Request {
 	request, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if query == nil {
+	if queries == nil {
 		return request
 	}
 
 	q := request.URL.Query()
-	for _, param := range query {
-		q.Add("query", param)
+	for _, queryValue := range queries {
+		q.Add(queryName, queryValue)
 	}
 
 	request.URL.RawQuery = q.Encode()

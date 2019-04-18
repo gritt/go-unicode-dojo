@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/standupdev/strset"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -106,6 +107,10 @@ func SearchUnicodeDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	searchTerms := query["query"]
+	if searchTerms == nil {
+		newErrorResponse(w, errors.New("Invalid query given"), http.StatusBadRequest)
+		return
+	}
 
 	unicodeData, err := ReadUnicodeData(UnicodeDataFilename)
 	if err != nil {
@@ -148,4 +153,11 @@ func newErrorResponse(w http.ResponseWriter, err error, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(jsonResp)
+}
+
+func main() {
+
+	http.HandleFunc("/search", SearchUnicodeDataHandler)
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
