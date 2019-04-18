@@ -94,7 +94,7 @@ func DownloadUnicodeFile() (string, error) {
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, resp.Body)
+	io.Copy(file, resp.Body)
 
 	return UnicodeDataFilename, nil
 }

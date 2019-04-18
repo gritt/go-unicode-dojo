@@ -88,7 +88,7 @@ func TestReadUnicodeData(t *testing.T) {
 }
 
 func TestDownloadUnicodeFile(t *testing.T) {
-	filename, err := DownloadUnicodeFile()
+	filename, _ := DownloadUnicodeFile()
 
 	got, err := ReadUnicodeData(filename)
 
