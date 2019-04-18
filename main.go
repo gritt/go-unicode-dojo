@@ -100,13 +100,7 @@ func DownloadUnicodeFile() (string, error) {
 }
 
 func SearchUnicodeDataHandler(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	if len(query) == 0 {
-		newErrorResponse(w, errors.New("Invalid query given"), http.StatusBadRequest)
-		return
-	}
-
-	queryTerms := query["query"]
+	queryTerms := r.URL.Query()["query"]
 	if queryTerms == nil {
 		newErrorResponse(w, errors.New("Invalid query given"), http.StatusBadRequest)
 		return
@@ -136,12 +130,10 @@ func SearchUnicodeDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp := CharNameResponse{}
 	resp.Status = "success"
-
 	resp.Message = "Found these results for your search"
 	if len(charNames) == 0 {
 		resp.Message = "Could not find any results for the given query"
 	}
-
 	resp.CharNames = charNames
 	jsonResp, err := json.Marshal(resp)
 	if err != nil {
