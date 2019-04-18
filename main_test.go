@@ -108,6 +108,18 @@ func TestSearchUnicodeDataHandler_query_cases(t *testing.T) {
 		{
 			"Should return error when null query is given",
 			nil,
+			`{"status":"error","message":"Invalid query given","charNames":null}`,
+			400,
+		},
+		{
+			"Should return error when empty query is given",
+			[]string{},
+			`{"status":"error","message":"Invalid query given","charNames":null}`,
+			400,
+		},
+		{
+			"Should return error when empty space query is given",
+			[]string{""},
 			`{"status":"error","message":"Empty query given","charNames":null}`,
 			400,
 		},

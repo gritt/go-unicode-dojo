@@ -102,14 +102,24 @@ func DownloadUnicodeFile() (string, error) {
 func SearchUnicodeDataHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	if len(query) == 0 {
-		newErrorResponse(w, errors.New("Empty query given"), http.StatusBadRequest)
+		newErrorResponse(w, errors.New("Invalid query given"), http.StatusBadRequest)
 		return
 	}
 
-	searchTerms := query["query"]
-	if searchTerms == nil {
+	queryTerms := query["query"]
+	if queryTerms == nil {
 		newErrorResponse(w, errors.New("Invalid query given"), http.StatusBadRequest)
 		return
+	}
+
+	searchTerms := []string{}
+	for _, term := range queryTerms {
+		trimmedString := strings.TrimSpace(term)
+		if trimmedString == "" {
+			newErrorResponse(w, errors.New("Empty query given"), http.StatusBadRequest)
+			return
+		}
+		searchTerms = append(searchTerms, trimmedString)
 	}
 
 	unicodeData, err := ReadUnicodeData(UnicodeDataFilename)
